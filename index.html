@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Setup Dashboard</title>
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.18);
+      --glass-border: rgba(255, 255, 255, 0.35);
+      --highlight: #7dd6ff;
+      --text-primary: #0f1b3d;
+      --text-secondary: rgba(15, 27, 61, 0.65);
+      --success: #2ecc71;
+      --warning: #f1c40f;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #03092f 0%, #01194d 42%, #021233 100%);
+      color: var(--text-primary);
+      padding: 48px 24px 72px;
+      position: relative;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      pointer-events: none;
+      background-repeat: no-repeat;
+      background-size: 160% 160%;
+      filter: blur(0px);
+      opacity: 0.9;
+      z-index: 0;
+      animation: float 26s linear infinite;
+    }
+
+    body::before {
+      background-image:
+        radial-gradient(circle at 18% 22%, rgba(99, 209, 255, 0.45), rgba(2, 9, 31, 0)),
+        radial-gradient(circle at 82% 12%, rgba(171, 146, 255, 0.5), rgba(2, 9, 31, 0) 55%),
+        radial-gradient(circle at 50% 85%, rgba(0, 184, 255, 0.35), rgba(2, 9, 31, 0) 52%);
+      animation-duration: 30s;
+    }
+
+    body::after {
+      background-image:
+        radial-gradient(ellipse at 12% 65%, rgba(0, 98, 255, 0.55), rgba(1, 17, 51, 0) 60%),
+        radial-gradient(circle at 88% 76%, rgba(0, 222, 255, 0.42), rgba(2, 9, 31, 0) 55%),
+        radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.12), rgba(2, 9, 31, 0) 52%);
+      mix-blend-mode: screen;
+      animation-direction: reverse;
+      animation-duration: 34s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate3d(-4%, -2%, 0) scale(1.02);
+      }
+      25% {
+        transform: translate3d(3%, 2%, 0) scale(1.03);
+      }
+      50% {
+        transform: translate3d(5%, -1%, 0) scale(1.01);
+      }
+      75% {
+        transform: translate3d(-2%, 3%, 0) scale(1.04);
+      }
+      100% {
+        transform: translate3d(-4%, -2%, 0) scale(1.02);
+      }
+    }
+
+    .page-wrapper {
+      width: min(1200px, 100%);
+      display: grid;
+      gap: 28px;
+      position: relative;
+      z-index: 1;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 32px;
+      letter-spacing: 0.04em;
+    }
+
+    .header-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      text-align: right;
+    }
+
+    .navigation {
+      display: flex;
+      gap: 18px;
+      background: rgba(255, 255, 255, 0.14);
+      padding: 10px 24px;
+      border-radius: 100px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(22px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 18px 35px rgba(3, 12, 54, 0.35);
+    }
+
+    .navigation button {
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      position: relative;
+      padding: 6px 0 4px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .navigation button:focus {
+      outline: none;
+      color: #ffffff;
+    }
+
+    .navigation button.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7dd6ff, #b1f6ff);
+    }
+
+    .navigation button:not(.active):hover {
+      color: #ffffff;
+    }
+
+    .active-tab-label {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 25px 35px rgba(8, 16, 44, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      border-radius: 28px;
+      padding: 32px;
+      backdrop-filter: blur(28px) saturate(160%);
+      display: grid;
+      gap: 22px;
+    }
+
+    .card-title {
+      font-size: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(15, 27, 61, 0.9);
+    }
+
+    .card-title span {
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--text-primary);
+      box-shadow: inset 0 1px 2px rgba(15, 27, 61, 0.08);
+      font-size: 14px;
+      transition: all 0.25s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--highlight);
+      box-shadow: 0 0 0 4px rgba(125, 214, 255, 0.2);
+    }
+
+    .switch-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.55);
+      box-shadow: inset 0 1px 2px rgba(15, 27, 61, 0.08);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .switch input[type="checkbox"] {
+      appearance: none;
+      width: 44px;
+      height: 24px;
+      background: rgba(15, 27, 61, 0.22);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.25s ease;
+    }
+
+    .switch input[type="checkbox"]::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 4px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 3px 8px rgba(15, 27, 61, 0.25);
+      transition: transform 0.25s ease;
+    }
+
+    .switch input[type="checkbox"]:checked {
+      background: linear-gradient(135deg, #8bd5ff, #5b9dff);
+    }
+
+    .switch input[type="checkbox"]:checked::after {
+      transform: translateX(18px);
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+      margin: 12px 0 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(18px);
+    }
+
+    thead {
+      background: rgba(255, 255, 255, 0.3);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    th,
+    td {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    tbody tr + tr {
+      border-top: 1px solid rgba(255, 255, 255, 0.45);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status.success {
+      background: rgba(46, 204, 113, 0.18);
+      color: var(--success);
+    }
+
+    .status.warning {
+      background: rgba(241, 196, 15, 0.18);
+      color: var(--warning);
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 12px 25px rgba(11, 32, 85, 0.25);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #80e0ff, #6aa2ff);
+      color: #0d1333;
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.45);
+      color: var(--text-secondary);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 28px rgba(11, 32, 85, 0.35);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 32px 16px;
+      }
+
+      .glass-card {
+        padding: 24px;
+      }
+
+      .navigation {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .card-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="header">
+      <h1>Access Setup</h1>
+      <div class="header-meta">
+        <p class="active-tab-label">Currently viewing: Administration</p>
+        <div class="navigation" role="tablist" aria-label="Access setup modules">
+          <button class="active" type="button" role="tab" aria-selected="true" data-tab="Administration">Administration</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="Products">Products</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="Accounting">Accounting</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="Customers &amp; Accounts">Customers &amp; Accounts</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="Loan Operations">Loan Operations</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="Access Management">Access Management</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="Reports">Reports</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="glass-card">
+      <div class="card-title">
+        <h2>Role Details</h2>
+        <span>Last updated 12 minutes ago</span>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label for="role-id">Role ID</label>
+          <input id="role-id" value="FND01_CREATE" />
+        </div>
+        <div>
+          <label for="role-name">Role Name</label>
+          <input id="role-name" value="Funds Disbursement" />
+        </div>
+        <div>
+          <label for="role-description">Role Description</label>
+          <input id="role-description" value="Product Setup Executive" />
+        </div>
+        <div>
+          <label for="product-type">Access for Product Types</label>
+          <select id="product-type">
+            <option>Mutual Fund</option>
+            <option>Savings Account</option>
+            <option>Loan Accounts</option>
+          </select>
+        </div>
+        <div>
+          <label for="txn-limit">Transaction Limit</label>
+          <input id="txn-limit" value="$1,000,000" />
+        </div>
+        <div>
+          <label for="risk-rating">Risk Rating</label>
+          <input id="risk-rating" value="Low" />
+        </div>
+        <div>
+          <label for="zone">Geo Zone</label>
+          <input id="zone" value="APAC" />
+        </div>
+        <div>
+          <label for="branch">Home Branch</label>
+          <input id="branch" value="Singapore" />
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <label>Role Capabilities</label>
+        <div class="switch-group">
+          <span class="switch">Create
+            <input type="checkbox" checked />
+          </span>
+          <span class="switch">Review
+            <input type="checkbox" checked />
+          </span>
+          <span class="switch">Approve
+            <input type="checkbox" />
+          </span>
+          <span class="switch">Close
+            <input type="checkbox" />
+          </span>
+          <span class="switch">Archive
+            <input type="checkbox" />
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card">
+      <div class="card-title">
+        <h2>Feature Access Matrix</h2>
+        <span>Customized for Product Setup Executive</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature ID</th>
+            <th>Feature Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AC00023</td>
+            <td>Account Plan Setup</td>
+            <td>Manage initial plan details, limits and role linkage</td>
+            <td><span class="status success">Enabled</span></td>
+            <td><button class="btn secondary">Modify</button></td>
+          </tr>
+          <tr>
+            <td>PR00041</td>
+            <td>Product Creation</td>
+            <td>Create and configure new mutual fund offerings</td>
+            <td><span class="status success">Enabled</span></td>
+            <td><button class="btn secondary">Modify</button></td>
+          </tr>
+          <tr>
+            <td>PR00042</td>
+            <td>Product Draft Review</td>
+            <td>Review drafts for compliance before publishing</td>
+            <td><span class="status warning">Review Only</span></td>
+            <td><button class="btn secondary">Modify</button></td>
+          </tr>
+          <tr>
+            <td>PR00044</td>
+            <td>Portfolio Assignment</td>
+            <td>Assign new products to existing advisor portfolios</td>
+            <td><span class="status success">Enabled</span></td>
+            <td><button class="btn secondary">Modify</button></td>
+          </tr>
+          <tr>
+            <td>FN00088</td>
+            <td>Fee Templates</td>
+            <td>Maintain fee schedules and revenue share templates</td>
+            <td><span class="status warning">Pending</span></td>
+            <td><button class="btn secondary">Modify</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="button-row">
+        <button class="btn secondary">Discard</button>
+        <button class="btn primary">Save Changes</button>
+      </div>
+    </section>
+  </div>
+  <script>
+    const tabs = document.querySelectorAll('.navigation button');
+    const activeLabel = document.querySelector('.active-tab-label');
+
+    const focusTab = (tab) => {
+      tab.focus();
+      tab.click();
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((btn) => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        });
+
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+
+        if (activeLabel) {
+          activeLabel.textContent = `Currently viewing: ${tab.dataset.tab}`;
+        }
+      });
+
+      tab.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+          event.preventDefault();
+          const nextIndex = (index + 1) % tabs.length;
+          focusTab(tabs[nextIndex]);
+        }
+
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          const prevIndex = (index - 1 + tabs.length) % tabs.length;
+          focusTab(tabs[prevIndex]);
+        }
+
+        if (event.key === 'Home') {
+          event.preventDefault();
+          focusTab(tabs[0]);
+        }
+
+        if (event.key === 'End') {
+          event.preventDefault();
+          focusTab(tabs[tabs.length - 1]);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
